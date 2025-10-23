@@ -32,6 +32,13 @@ const ALL_SPECS: IndexSpec[] = [
     { col: "tickets",  name: "hybrid", file: "tickets.hybrid.json" },
 ];
 
+// Function helper to load JSON index definition
+const loadDefinition = (file: string): any => {
+    // Dynamically builds the full, absolute path to an index JSON file
+    const full = path.join(process.cwd(), "config", "indexes", file);
+    return JSON.parse(readFileSync(full, "utf8"));
+}
+// Function to list existing indexes on a collection
 const listExistingIndexes = async (db: any, colName: string): Promise<string[]> => {
     // Prefer the driver's helper if available; fallback to $listSearchIndexes
     const col = db.collection(colName);
