@@ -58,6 +58,50 @@ const listExistingIndexes = async (db: any, colName: string): Promise<string[]> 
     }
   }
 
+// Show index configurations
+const showIndexDefinitions = async (db: any, colName: string): Promise<void> => {
+    const col = db.collection(colName);
+    const indexes = await col.listSearchIndexes().toArray();
+
+    // If no indexes exist, print a message and return
+    if (indexes.length === 0) {
+        console.log(`No indexes found for collection ${colName}`);
+        return;
+    }
+
+    // Otherwise, print each index definition
+    console.log(`\n✔ Index definitions for '${colName}':\n`);
+    indexes.forEach((idx: any) => {
+      console.log(`🟢 Index name: ${idx.name}`);
+      console.dir(idx, { depth: null, colors: true });
+      console.log("──────────────────────────────\n");
+    });
+}
+// Create index helper
+// Record<string, any> is a type alias for an object with string keys and any values
+const createIndex = async (db: any, col: string, name: string, definition: Record<string, any>): Promise<void> => {
+    const indexCollection = db.collection(col);
+    await indexCollection.createSearchIndex(definition);
+    console.log(`Created index ${name} on collection ${col}`);
+}    
+
+// Update index helper
+const updateIndex = async (db: any, col: string, name: string, definition: Record<string, any>): Promise<void> => {
+    const indexCollection = db.collection(col);
+    await indexCollection.updateSearchIndex(name, definition);
+    console.log(`Updated index ${name} on collection ${col}`);
+}
+
+// Ensure indexes are configured as expected
+const ensureIndex = async (db: any, spec: IndexSpec): Promise<void> => {
+    const existingIndexes = await listExistingIndexes(db, spec.col);
+    const definition = loadDefinition(spec.file);
+    
+    const indexCollection = db.collection(spec.col);
+    if (existingIndexes.includes(spec.name)) {
+        await indexCollection
+    }
+}
 // simple prompt helper
 const prompt = (question: string): Promise<string> => {
     // Create a readline interface for reading input from the user
@@ -90,6 +134,9 @@ const main = async () => {
     const indexes = await listExistingIndexes(db, colName);
     console.log(`\nIndexes on '${colName}':`, indexes);
   
+    // Show the definition of each index
+    await showIndexDefinitions(db, colName);
+
     await client.close();
   }
   
